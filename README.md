@@ -24,7 +24,7 @@ Instalação
 
 Primeiramente, clone este repositório para uma pasta com o seguinte commando:
 
-``` git clone https://github.com/gcavalcante8808/zabbix-turbo-scripts ```
+``` git clone https://github.com/gcavalcante8808/zabbix-turbo-scripts.git ```
 
 Acesse a pasta criada e execute o seguinte comando:
 
