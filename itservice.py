@@ -26,10 +26,15 @@ class ITServiceManager:
     Neste momento contém suporte a criação da árvore e posteriormente também
     possuíra suporte a remoção completa desta.
     """
-    def __init__(self, server, user, password, http_auth):
-        self.zapi = connect(server=server, user=user, password=password,
-                            http_auth=http_auth)
+    def __init__(self, *args, **kwargs):
+        self.zapi = connect(server=kwargs.pop('server'), user=kwargs.pop('user'),
+                            password=kwargs.pop('password'),
+                            http_auth=kwargs.get('http_auth', False))
+
         self.services = None
+        self.hostgroup = kwargs.get('hostgroup', False)
+        self.sla = kwargs.get('sla', 99.0)
+        self.priority = kwargs.get('priority', 5)
 
     def populate_tree(self):
         """
@@ -37,7 +42,14 @@ class ITServiceManager:
         e utiliza os demais métodos para inserir registros na árvore
         de IT Services do Zabbix.
         """
-        triggers = self.zapi.trigger.get(min_severity=5, active=True,
+        if self.hostgroup:
+            triggers = self.zapi.trigger.get(min_severity=self.priority,  monitored=True,
+                                         output=['triggerid', 'description'],
+                                         selectHosts=['host', 'name'],
+                                         selectGroups=['name'],
+                                         group=self.hostgroup)
+        else:
+            triggers = self.zapi.trigger.get(min_severity=self.priority,  monitored=True,
                                          output=['triggerid', 'description'],
                                          selectHosts=['host', 'name'],
                                          selectGroups=['name'])
@@ -97,19 +109,19 @@ class ITServiceManager:
         if not parentid and not triggerid:
             result = self.zapi.service.create(name=name, showsla=1,
                                               sortorder=1, algorithm=1,
-                                              goodsla=99.9)
+                                              goodsla=self.sla)
 
         elif parentid and triggerid == 0:
             result = self.zapi.service.create(name=name,
                                               parentid=parentid,
                                               showsla=1, sortorder=1,
-                                              algorithm=1, goodsla=99.9)
+                                              algorithm=1, goodsla=self.sla)
 
         else:
             result = self.zapi.service.create(name=name,
                                               parentid=parentid,
                                               showsla=1, sortorder=1,
-                                              algorithm=1, goodsla=99.9,
+                                              algorithm=1, goodsla=self.sla,
                                               triggerid=triggerid)
 
         if parentid:
@@ -174,20 +186,22 @@ if __name__ == '__main__':
     PASS_GROUP.add_argument('--passfile', type=argparse.FileType('r'))
 
     PARSER.add_argument('--httpauth', dest='http_auth', type=bool, required=False)
+
+    PARSER.add_argument('--hostgroup', dest='hostgroup', type=str, required=False)
+    PARSER.add_argument('--sla', dest='sla', type=float, required=False, default=99.9)
+    PARSER.add_argument('--priority', dest='priority', type=int, required=False, default=5)
+
     PARSER.add_argument('--purge', dest='purge_tree', type=bool, required=False)
 
     ARGS = PARSER.parse_args()
-    SERVER = ARGS.server
-    USER = ARGS.user
-    HTTP_AUTH = ARGS.http_auth or False
 
+    kwargs = vars(ARGS)
     if ARGS.passfile:
         PASSWORD = ARGS.passfile.read()
     else:
         PASSWORD = ARGS.password
 
-    ITS = ITServiceManager(SERVER, USER, PASSWORD, HTTP_AUTH)
-
+    ITS = ITServiceManager(**kwargs)
     if ARGS.purge_tree:
         ITS.purge_tree()
     else:
