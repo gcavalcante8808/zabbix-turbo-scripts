@@ -43,6 +43,7 @@ class ITServiceManager:
         de IT Services do Zabbix.
         """
         if self.hostgroup:
+            groups = [{'name': self.hostgroup}]
             triggers = self.zapi.trigger.get(min_severity=self.priority,  monitored=True,
                                          output=['triggerid', 'description'],
                                          selectHosts=['host', 'name'],
@@ -53,13 +54,13 @@ class ITServiceManager:
                                          output=['triggerid', 'description'],
                                          selectHosts=['host', 'name'],
                                          selectGroups=['name'])
+            groups = ( trigger['groups'] for trigger in triggers )
 
         # Mapeamento dos valores para facilitar o tratamento
         # posterior dos dados.
         info = ({'trigger': TRIGGER_RE.sub(trigger['hosts'][0]['host'],
                                            trigger['description']),
                  'triggerid':trigger['triggerid'],
-                 'groups': trigger['groups'],
                  'name': '{0} - {1}'.format(trigger['hosts'][0]['host'],
                                             trigger['hosts'][0]['name'])
                 }
@@ -69,7 +70,7 @@ class ITServiceManager:
 
         # Criação dos serviços propriamente ditos.
         for item in info:
-            for group in item['groups']:
+            for group in groups:
                 if not self.search_service(group['name']):
                     self.create_service(name=group['name'])
 
