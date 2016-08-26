@@ -27,9 +27,7 @@ class URLValidatorAction(argparse.Action):
     """
 
     def __call__(self, parser, args, values, option_strings=None):
-        url_re = re.compile(r"""http[s]?://[-a-zA-Z0-9@:%._\+~#=]{2,256}\.
-        [a-z]{2,6}\b([-a-zA-Z0-9@:%_\+.~#?&//=]*)
-        |http://localhost[/]?""")
+        url_re = re.compile(r"https?:\/\/\w{2,30}\.\w{2,30}\.[\w.]*")
 
         if url_re.match(values):
             setattr(args, self.dest, values)
