@@ -1,5 +1,6 @@
-Zabbix Turbo Scripts
---------------------
+Zabbix Itservice Scripts
+------------------------
+
 Grupo de scripts e utilidades para uso em conjunto com o Zabbix, que permitem melhor integração e automação de tarefas.
 
 Introdução
@@ -40,15 +41,35 @@ Uma vez que a instalação foi concluída com sucesso, você pode utilizar, por 
 
 Cada parâmetro passado, corresponde a seguinte informação:
 
- * Obrigatório -s: URL do frontend do Zabbix, no formato http://servidor/;
- * Obrigatório -u: Nome do Usuário do Zabbix. O usuário utilizado aqui somente poderá criar Serviços de TI para os grupos de hosts em que ele tenha acesso de escrita;
- * -p: Fará com que um prompt apareça pedindo a senha no terminal de maneira segura. Não pode ser usado em conjunto com --passfile.
- * --passfile: Ao invés de usar um prompt, procura a senha no arquivo especificado, útil para uso em scripts. Não pode ser usado em conjunto com -p;
+Information about each parameter are explained bellow:
+
+Basic Parameters:
+
+ * -s (mandatory): Zabbix Frontend URL in http format (https://myserver.com):
+ * -u (mandatory): Zabbix User;
+ * -p (mutually exclusive with --passfile) Zabbix User Password;
+ * --passfile (mutually exclusive with -p) Text file that has the Zabbix User Password;
+
+Extra Auth Parameters:
+
+ * --http_auth: Para os casos em que o Zabbix é configurado para utilizar autenticação HTTP (via webserver) ao invés de interna ou ldap. Devem ser utilizada a palavra True ou False;
+
+Filter Params:
+
  * --hostgroup: Filtragem de criação de ITServices para um hostgroup específico;
  * --sla: Valor de SLA a ser definido. 99.9 caso não o atributo não seja provido;
  * --priority: Valor mínimo das triggers, conforme https://www.zabbix.com/documentation/2.4/manual/api/reference/triggerprototype/object;
- * --http_auth: Para os casos em que o Zabbix é configurado para utilizar autenticação HTTP (via webserver) ao invés de interna ou ldap. Devem ser utilizada a palavra True ou False.;
- * --purge_tree: permite excluir toda a árvore de Serviços de TI, mas requer que o usuário especificado seja administrador da ferramenta
+ * --filter: String that will be used to filter the triggers by its description;
+
+Organisation Params (Allow to define tree possible levels in the tree before the content):
+
+ * --root: Root name which all other objects will be created underneath;
+ * --branch: Second level (After root) which all objects will be placed;
+ * --node: Third (and last level, after branch) which all objects will be place;
+
+Clear Options (Dangerous):
+
+ * --purge_tree: Allows do destroy all SLA tree, which includes previous calculate SLA. Use with Caution..
 
 ** O comportamento padrão do script é criar a árvore ou atualizar com novos itens criados **
 
