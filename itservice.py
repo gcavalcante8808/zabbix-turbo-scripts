@@ -12,7 +12,7 @@ Adicionalmente, este módulo é compatível com as versões 2 e 3 do Python.
 """
 import re
 import argparse
-
+import pdb
 from collections import OrderedDict
 from util.core import connect
 from util.validators import PasswordPromptAction, URLValidatorAction
@@ -111,6 +111,7 @@ class ITServiceManager:
                  }
                 for trigger in triggers)
 
+
         self.services = self.get_services()
 
         # Time to create all triggers and services inside SLA Namepspace.
@@ -151,11 +152,12 @@ class ITServiceManager:
         result = False
 
         if parentid:
-            match = (x for x in self.services if x.get('name') == name and
+            # Decodes here fixes DecodeErrors on Python2.
+            match = (x for x in self.services if x.get('name') == name.decode('utf-8') and
                      isinstance(x['parent'], dict) and
                      x['parent']['serviceid'] == parentid)
         else:
-            match = (x for x in self.services if x.get('name') == name)
+            match = (x for x in self.services if x.get('name') == name.decode('utf-8'))
 
         try:
             one = next(match)
